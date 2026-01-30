@@ -19,6 +19,106 @@
             min-height: 100vh;
             padding: 20px;
         }
+        .hidden {
+            display: none !important;
+        }
+        /* 로그인/회원가입 화면 */
+        .auth-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.25);
+            padding: 32px;
+            width: 100%;
+            max-width: 380px;
+        }
+        .auth-card h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 22px;
+        }
+        .auth-card .sub {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        .auth-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .auth-tabs button {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: none;
+            font-size: 15px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .auth-tabs button:hover {
+            color: #333;
+        }
+        .auth-tabs button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        .auth-form label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 6px;
+        }
+        .auth-form input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            margin-bottom: 14px;
+            transition: border-color 0.2s;
+        }
+        .auth-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .auth-form button[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-top: 6px;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .auth-form button[type="submit"]:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+        .auth-form button[type="submit"]:active {
+            transform: translateY(0);
+        }
+        #authMessage {
+            font-size: 13px;
+            text-align: center;
+            margin-top: 12px;
+            min-height: 18px;
+        }
+        #authMessage.error {
+            color: #c62828;
+        }
+        /* 게임 화면 */
         .container {
             background: white;
             border-radius: 12px;
@@ -26,11 +126,19 @@
             padding: 20px;
             max-width: 700px;
         }
-        h1 {
+        .container h1 {
             text-align: center;
             color: #333;
             margin-bottom: 10px;
             font-size: 24px;
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
         }
         .info-panel {
             background: #f5f5f5;
@@ -94,6 +202,14 @@
         .btn-reset:hover {
             background: #388e3c;
         }
+        .btn-logout {
+            background: #78909c;
+            color: white;
+            font-size: 13px;
+        }
+        .btn-logout:hover {
+            background: #607d8b;
+        }
         canvas {
             display: block;
             border: 2px solid #ddd;
@@ -110,8 +226,37 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎲 장기 (Janggi)</h1>
+    <!-- 로그인/회원가입 화면 (처음 보이는 화면) -->
+    <div id="authScreen" class="auth-card">
+        <h1>🎲 장기</h1>
+        <p class="sub">이메일로 로그인하거나 회원가입하세요.</p>
+        <div class="auth-tabs">
+            <button type="button" id="tabLogin" class="active">로그인</button>
+            <button type="button" id="tabSignup">회원가입</button>
+        </div>
+        <form id="loginForm" class="auth-form">
+            <label for="loginEmail">이메일</label>
+            <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email" required>
+            <label for="loginPassword">비밀번호</label>
+            <input type="password" id="loginPassword" placeholder="비밀번호" autocomplete="current-password" required>
+            <button type="submit">로그인</button>
+        </form>
+        <form id="signupForm" class="auth-form hidden">
+            <label for="signupEmail">이메일</label>
+            <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email" required>
+            <label for="signupPassword">비밀번호</label>
+            <input type="password" id="signupPassword" placeholder="6자 이상" autocomplete="new-password" required minlength="6">
+            <button type="submit">회원가입</button>
+        </form>
+        <p id="authMessage"></p>
+    </div>
+
+    <!-- 게임 화면 (로그인 후 표시) -->
+    <div id="gameScreen" class="container hidden">
+        <div class="game-header">
+            <h1>🎲 장기 (Janggi)</h1>
+            <button type="button" class="btn-logout" id="btnLogout">로그아웃</button>
+        </div>
         <div class="info-panel">
             <div class="turn-info" id="turnInfo">초(楚) 차례</div>
             <div class="check-warning" id="checkWarning"></div>
@@ -125,6 +270,9 @@
         <div class="hint">기물을 클릭해 선택하고, 이동 가능한 곳을 클릭하세요. 키보드 U로 무르기.</div>
     </div>
 
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
     <script src="janggi.js"></script>
 </body>
 </html>
