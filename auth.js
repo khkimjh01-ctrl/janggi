@@ -120,6 +120,24 @@
     if (tabLogin) tabLogin.addEventListener('click', function () { switchTab(true); });
     if (tabSignup) tabSignup.addEventListener('click', function () { switchTab(false); });
 
+    var btnGoogle = document.getElementById('btnGoogleLogin');
+    if (btnGoogle) {
+        btnGoogle.addEventListener('click', function () {
+            showMessage('Google 로그인 중...', false);
+            client.auth.signInWithOAuth({ provider: 'google' })
+                .then(function (res) {
+                    if (res.error) {
+                        showMessage(res.error.message || 'Google 로그인에 실패했습니다.', true);
+                    } else {
+                        window.location.href = res.data.url;
+                    }
+                })
+                .catch(function (err) {
+                    showMessage(err.message || 'Google 로그인에 실패했습니다.', true);
+                });
+        });
+    }
+
     if (btnLogout) {
         btnLogout.addEventListener('click', function () {
             client.auth.signOut().then(function () {
